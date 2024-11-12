@@ -1,0 +1,144 @@
+/* General styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    color: #333;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+/* Sidebar Styles */
+.sidebar {
+    width: 250px;
+    background-color: #4CAF50;
+    color: white;
+    padding: 20px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar h2 {
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 24px;
+}
+
+.sidebar nav a {
+    display: block;
+    color: white;
+    padding: 10px 0;
+    text-decoration: none;
+    text-align: center;
+    font-size: 18px;
+    transition: background-color 0.3s;
+    border-radius: 5px;
+}
+
+.sidebar nav a:hover,
+.sidebar nav a.active {
+    background-color: #236747;
+    font-weight: bold;
+}
+
+/* Logout Button Styles */
+#logout-btn {
+    display: block;
+    width: 100%;
+    padding: 10px 15px;
+    background-color: #f44336;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: center;
+    font-size: 16px;
+    margin-top: 20px;
+    transition: background-color 0.3s;
+}
+
+#logout-btn:hover {
+    background-color: #d32f2f;
+}
+
+/* Content Styles */
+.content {
+    margin-left: 270px; /* Adjust margin to match sidebar width */
+    padding: 20px;
+    max-width: calc(100% - 270px); /* Set max-width to prevent overflow */
+    overflow: auto;
+}
+
+h3 {
+    color: #2a7f62;
+}
+
+/* Section Styles */
+.section {
+    display: none; /* Hide all sections by default */
+    padding: 20px;
+    border: 1px solid #ddd;
+    margin-top: 20px;
+    background-color: #fff;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    transition: opacity 0.3s ease-in-out;
+}
+
+/* Display the active section */
+.section.active {
+    display: block; /* Only display the active section */
+    opacity: 1;
+}
+
+/* Editable input styles */
+input.editable {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    background-color: transparent; /* No background color initially */
+    transition: background-color 0.3s ease;
+}
+
+input.editable:disabled {
+    border: none;
+    background-color: transparent;
+    color: inherit;
+}
+
+input.editable:not(:disabled) {
+    border: 1px solid #ddd; /* Show border when editable */
+    background-color: #f9f9f9; /* Light background for editing */
+}
+
+/* Button Styles */
+button {
+    padding: 10px 15px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #1f5f3e;
+}
+
+button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}

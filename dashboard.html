@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard</title>
+    <link rel="stylesheet" href="dashboard.css">
+    <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, Timestamp, updateDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCX9sRfQPJfun3BHcA7YyqbVZIvBvcIvrc",
+            authDomain: "student-id-2e836.firebaseapp.com",
+            projectId: "student-id-2e836",
+            storageBucket: "student-id-2e836.firebasestorage.app",
+            messagingSenderId: "657240475012",
+            appId: "1:657240475012:web:9bc4aa94ca9d31f33849d1"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        setPersistence(auth, browserLocalPersistence).catch((error) => {
+            console.error("Error setting persistence:", error);
+        });
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                const userId = user.uid;
+                loadUserData(userId);
+            }
+        });
+
+        async function loadUserData(userId) {
+            const docRef = doc(db, "students", userId);
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                document.getElementById('student-name').value = data.name || '';
+                document.getElementById('student-grade').value = data.grade || '';
+                document.getElementById('student-section').value = data.section || '';
+                document.getElementById('student-age').value = data.age || '';
+                document.getElementById('student-birthday').value = data.birthday || '';
+                document.getElementById('student-contact').value = data.contact || '';
+                document.getElementById('student-address').value = data.address || '';
+                document.getElementById('mother-name').value = data.mother || '';
+                document.getElementById('father-name').value = data.father || '';
+                document.getElementById('parent-contact').value = data.parentContact || '';
+                document.getElementById('guardian-name').value = data.guardian || '';
+
+                loadTableData('absences', data.absences || []);
+                loadTableData('tardiness', data.tardiness || []);
+                loadTableData('violations', data.violations || []);
+            } else {
+                console.log("No data found for this user.");
+            }
+        }
+
+        function loadTableData(tableBodyId, dataArray) {
+            const tableBody = document.getElementById(`${tableBodyId}-table-body`);
+            tableBody.innerHTML = ''; // Clear existing rows
+            dataArray.forEach((item) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><input type="date" value="${item.date}" disabled></td>
+                    <td><input type="text" value="${item.reason || item.description}" disabled></td>
+                    <td><input type="text" value="${item.status}" disabled></td>
+                    <td><button disabled>Added</button></td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const links = document.querySelectorAll('.sidebar a');
+            const sections = document.querySelectorAll('.section');
+            const editBtn = document.getElementById('edit-info-btn');
+            const saveBtn = document.getElementById('save-info-btn');
+            const inputs = document.querySelectorAll('.editable');
+
+            sections[0].classList.add('active'); // Default active section (Home)
+
+            links.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    sections.forEach(section => section.classList.remove('active'));
+                    const targetSection = document.querySelector(link.getAttribute('href'));
+                    targetSection.classList.add('active');
+                    links.forEach(link => link.classList.remove('active'));
+                    link.classList.add('active');
+                });
+            });
+
+            editBtn.addEventListener('click', () => {
+                inputs.forEach(input => input.disabled = false);
+                editBtn.style.display = 'none';
+                saveBtn.style.display = 'inline-block';
+            });
+
+            saveBtn.addEventListener('click', async () => {
+                inputs.forEach(input => input.disabled = true);
+                editBtn.style.display = 'inline-block';
+                saveBtn.style.display = 'none';
+
+                const userId = auth.currentUser.uid;
+                const docRef = doc(db, "students", userId);
+
+                const updatedData = {
+                    name: document.getElementById('student-name').value,
+                    grade: document.getElementById('student-grade').value,
+                    section: document.getElementById('student-section').value,
+                    age: document.getElementById('student-age').value,
+                    birthday: document.getElementById('student-birthday').value,
+                    contact: document.getElementById('student-contact').value,
+                    address: document.getElementById('student-address').value,
+                    mother: document.getElementById('mother-name').value,
+                    father: document.getElementById('father-name').value,
+                    parentContact: document.getElementById('parent-contact').value,
+                    guardian: document.getElementById('guardian-name').value
+                };
+
+                try {
+                    await setDoc(docRef, updatedData, { merge: true });
+                    console.log("User information saved successfully.");
+                } catch (error) {
+                    console.error("Error saving user information:", error);
+                }
+            });
+
+            const logoutBtn = document.getElementById('logout-btn');
+            logoutBtn.addEventListener('click', () => {
+                signOut(auth).then(() => {
+                    window.location.href = "index.html";
+                }).catch((error) => {
+                    console.error("Error logging out:", error);
+                });
+            });
+        });
+
+        async function createRow(tableBodyId, type) {
+            const tableBody = document.getElementById(tableBodyId);
+            const row = document.createElement('tr');
+            const date = new Date().toISOString().split('T')[0]; // Current date in YYYY-MM-DD format
+            row.innerHTML = `
+                <td><input type="date" value="${date}" disabled></td>
+                <td><input type="text" placeholder="Reason/Description" disabled></td>
+                <td><input type="text" placeholder="Status" disabled></td>
+                <td><button disabled>Added</button></td>
+            `;
+            tableBody.appendChild(row);
+
+            const userId = auth.currentUser.uid;
+            const docRef = doc(db, "students", userId);
+
+            // Retrieve current data to update the student record
+            const docSnap = await getDoc(docRef);
+            const data = docSnap.data();
+            const newItem = {
+                date: date,
+                reason: "",
+                status: "Pending",
+            };
+
+            // Add to corresponding category (absences, tardiness, or violations)
+            let newDataArray = [];
+            if (type === 'absences') {
+                newDataArray = data.absences || [];
+            } else if (type === 'tardiness') {
+                newDataArray = data.tardiness || [];
+            } else if (type === 'violations') {
+                newDataArray = data.violations || [];
+            }
+
+            newDataArray.push(newItem);
+            await updateDoc(docRef, {
+                [type]: newDataArray
+            });
+
+            console.log(`Added ${type} entry to Firestore`);
+        }
+
+        function addAbsenceRow() { createRow("absences-table-body", "absences"); }
+        function addTardinessRow() { createRow("tardiness-table-body", "tardiness"); }
+        function addViolationRow() { createRow("violations-table-body", "violations"); }
+    </script>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>DCDNHS - Student Info</h2>
+        <nav>
+            <a href="#home">Home</a>
+            <a href="#student-info">Student Information</a>
+            <a href="#absences">Absences</a>
+            <a href="#tardiness">Tardiness</a>
+            <a href="#violations">Violations</a>
+        </nav>
+        <button id="logout-btn" style="margin-top: 20px; padding: 10px 15px; background-color: #f44336; color: white; border: none; border-radius: 5px; cursor: pointer;">
+            Log Out
+        </button>
+    </div>
+
+    <div class="content">
+        <!-- Home Section -->
+        <div id="home" class="section active">
+            <h3>Welcome to the Dashboard!</h3>
+            <p>This is your personal student dashboard.</p>
+        </div>
+
+        <!-- Student Information Section -->
+        <div id="student-info" class="section">
+            <h3>Student Information</h3>
+            <form>
+                <input id="student-name" class="editable" placeholder="Student's Name" disabled><br>
+                <input id="student-grade" class="editable" placeholder="Grade" disabled><br>
+                <input id="student-section" class="editable" placeholder="Section" disabled><br>
+                <input id="student-age" class="editable" placeholder="Age" disabled><br>
+                <input id="student-birthday" class="editable" placeholder="Birthday" disabled><br>
+                <input id="student-contact" class="editable" placeholder="Contact" disabled><br>
+                <input id="student-address" class="editable" placeholder="Address" disabled><br>
+                <input id="mother-name" class="editable" placeholder="Mother's Name" disabled><br>
+                <input id="father-name" class="editable" placeholder="Father's Name" disabled><br>
+                <input id="parent-contact" class="editable" placeholder="Parent's Contact" disabled><br>
+                <input id="guardian-name" class="editable" placeholder="Guardian's Name" disabled><br>
+            </form>
+            <button id="edit-info-btn">Edit</button>
+            <button id="save-info-btn" style="display: none;">Save</button>
+        </div>
+
+        <!-- Absences Section -->
+        <div id="absences" class="section">
+            <h3>Absences</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Reason</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="absences-table-body">
+                    <!-- Absences entries go here -->
+                </tbody>
+            </table>
+            <button onclick="addAbsenceRow()">Add Absence</button>
+        </div>
+
+        <!-- Tardiness Section -->
+        <div id="tardiness" class="section">
+            <h3>Tardiness</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Reason</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="tardiness-table-body">
+                    <!-- Tardiness entries go here -->
+                </tbody>
+            </table>
+            <button onclick="addTardinessRow()">Add Tardiness</button>
+        </div>
+
+        <!-- Violations Section -->
+        <div id="violations" class="section">
+            <h3>Violations</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Description</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="violations-table-body">
+                    <!-- Violations entries go here -->
+                </tbody>
+            </table>
+            <button onclick="addViolationRow()">Add Violation</button>
+        </div>
+    </div>
+</body>
+</html>
