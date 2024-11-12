@@ -20,11 +20,13 @@ body {
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     text-align: center;
+    box-sizing: border-box;
 }
 
 h2 {
     margin-bottom: 20px;
     color: #333;
+    font-size: 24px;
 }
 
 .form-group {
@@ -90,10 +92,34 @@ a:hover {
 }
 
 /* Responsive Design */
-@media (max-width: 480px) {
+@media (max-width: 768px) {
     .container {
         width: 90%;
         padding: 15px;
+    }
+
+    h2 {
+        font-size: 20px;
+    }
+
+    button {
+        font-size: 15px;
+    }
+
+    input {
+        font-size: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        align-items: flex-start;
+        padding-top: 20px;
+    }
+
+    .container {
+        width: 95%;
+        padding: 10px;
     }
 
     h2 {
@@ -102,9 +128,11 @@ a:hover {
 
     button {
         font-size: 14px;
+        padding: 10px;
     }
 
     input {
         font-size: 14px;
+        padding: 10px;
     }
 }
